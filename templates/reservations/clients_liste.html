@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Clients - Fleet.cm{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
+    <a href="{% url 'reservations:creer_client' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">+ Ajouter un client</a>
+</div>
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-500 text-left"><tr><th class="px-4 py-3">Nom</th><th class="px-4 py-3">WhatsApp</th><th class="px-4 py-3">CNI</th></tr></thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for c in clients %}
+            <tr class="hover:bg-gray-50"><td class="px-4 py-3">{{ c.nom }}</td><td class="px-4 py-3">{{ c.telephone_whatsapp }}</td><td class="px-4 py-3">{{ c.cni|default:"-" }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="px-4 py-8 text-center text-gray-400">Aucun client.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

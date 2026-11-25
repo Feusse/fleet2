@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un client{% endblock %}
+{% block content %}
+<div class="max-w-md">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Ajouter un client</h1>
+    <form method="post" class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>{{ field }}{% if field.errors %}<p class="text-red-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}</div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-blue-600 text-white rounded-md py-2 font-medium hover:bg-blue-700">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

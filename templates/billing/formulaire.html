@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Enregistrer un paiement - Fleet.cm{% endblock %}
+{% block content %}
+<div class="max-w-md">
+    <h1 class="text-2xl font-bold text-gray-900 mb-1">Enregistrer un paiement</h1>
+    <p class="text-gray-500 text-sm mb-6">{{ reservation.client }} -- {{ reservation.vehicule }}</p>
+    <form method="post" class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>{{ field }}{% if field.errors %}<p class="text-red-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}</div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-green-600 text-white rounded-md py-2 font-medium hover:bg-green-700">Enregistrer le paiement</button>
+    </form>
+    <p class="text-xs text-gray-400 mt-3">
+        {% if cinetpay_actif %}
+        Une fois enregistre, vous pourrez generer un lien de paiement Orange Money / MTN MoMo
+        directement depuis la fiche reservation, ou le marquer "paye" manuellement (especes).
+        {% else %}
+        Le paiement sera cree avec le statut "en attente". Marquez-le "paye" depuis la fiche
+        reservation une fois l'argent recu (Orange Money / MTN MoMo / Cash).
+        {% endif %}
+    </p>
+</div>
+{% endblock %}

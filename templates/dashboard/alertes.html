@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Alertes - Fleet.cm{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Alertes</h1>
+
+<div class="space-y-6">
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Assurances qui expirent dans moins de 15 jours</h2>
+        <div class="space-y-2">
+            {% for v in assurances_expirant %}
+            <a href="{% url 'fleet:detail' v.pk %}" class="flex justify-between text-sm border-b border-gray-50 pb-2 hover:text-blue-600">
+                <span>{{ v.marque }} {{ v.modele }} ({{ v.immatriculation }})</span>
+                <span class="text-orange-600 font-medium">{{ v.date_expiration_assurance }}</span>
+            </a>
+            {% empty %}<p class="text-gray-400 text-sm">Rien a signaler.</p>{% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Vidange necessaire (plus de 5000 km depuis le dernier entretien)</h2>
+        <div class="space-y-2">
+            {% for v in vidanges_necessaires %}
+            <a href="{% url 'fleet:detail' v.pk %}" class="flex justify-between text-sm border-b border-gray-50 pb-2 hover:text-blue-600">
+                <span>{{ v.marque }} {{ v.modele }} ({{ v.immatriculation }})</span>
+                <span class="text-orange-600 font-medium">{{ v.kilometrage_actuel }} km</span>
+            </a>
+            {% empty %}<p class="text-gray-400 text-sm">Rien a signaler.</p>{% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Vehicules en retard de retour</h2>
+        <div class="space-y-2">
+            {% for r in retards %}
+            <a href="{% url 'reservations:detail' r.pk %}" class="flex justify-between text-sm border-b border-gray-50 pb-2 hover:text-blue-600">
+                <span>{{ r.vehicule }} -- {{ r.client }}</span>
+                <span class="text-red-600 font-medium">Retour prevu le {{ r.date_retour }}</span>
+            </a>
+            {% empty %}<p class="text-gray-400 text-sm">Aucun retard.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Equipe - Fleet.cm{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <h1 class="text-2xl font-bold text-gray-900">Equipe</h1>
+    <a href="{% url 'tenants:ajouter_gestionnaire' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">+ Ajouter un gestionnaire</a>
+</div>
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-500 text-left">
+            <tr><th class="px-4 py-3">Nom d'utilisateur</th><th class="px-4 py-3">Role</th><th class="px-4 py-3">Statut</th><th class="px-4 py-3"></th></tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for m in membres %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3">{{ m.username }}{% if m == request.user %} <span class="text-xs text-gray-400">(vous)</span>{% endif %}</td>
+                <td class="px-4 py-3">{{ m.get_role_display }}</td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded-full text-xs {% if m.is_active %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-500{% endif %}">
+                        {% if m.is_active %}Actif{% else %}Desactive{% endif %}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                    {% if m.role == 'gestionnaire' %}
+                    <form method="post" action="{% url 'tenants:desactiver_membre' m.pk %}">
+                        {% csrf_token %}
+                        <button class="text-xs text-blue-600 hover:underline">{% if m.is_active %}Desactiver{% else %}Reactiver{% endif %}</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-xs text-gray-400 mt-3">
+    Un gestionnaire peut gerer les vehicules, reservations et clients, mais n'a pas acces
+    au chiffre d'affaires, aux impayes, aux exports de rapports, ni a la suppression de vehicules.
+</p>
+{% endblock %}

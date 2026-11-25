@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Vehicules - Fleet.cm{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <h1 class="text-2xl font-bold text-gray-900">Vehicules</h1>
+    <a href="{% url 'fleet:creer' %}" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">+ Ajouter un vehicule</a>
+</div>
+<div class="flex gap-2 mb-6 flex-wrap">
+    <a href="{% url 'fleet:liste' %}" class="px-3 py-1 rounded-full text-xs font-medium {% if not statut_actif %}bg-gray-900 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">Tous</a>
+    <a href="?statut=disponible" class="px-3 py-1 rounded-full text-xs font-medium {% if statut_actif == 'disponible' %}bg-green-600 text-white{% else %}bg-green-100 text-green-700{% endif %}">Disponible</a>
+    <a href="?statut=loue" class="px-3 py-1 rounded-full text-xs font-medium {% if statut_actif == 'loue' %}bg-red-600 text-white{% else %}bg-red-100 text-red-700{% endif %}">Loue</a>
+    <a href="?statut=maintenance" class="px-3 py-1 rounded-full text-xs font-medium {% if statut_actif == 'maintenance' %}bg-orange-600 text-white{% else %}bg-orange-100 text-orange-700{% endif %}">Maintenance</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for v in vehicules %}
+    <a href="{% url 'fleet:detail' v.pk %}" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition">
+        <div class="h-36 bg-gray-100 flex items-center justify-center">
+            {% if v.photo %}<img src="{{ v.photo.url }}" class="h-full w-full object-cover">{% else %}<span class="text-gray-300 text-sm">Pas de photo</span>{% endif %}
+        </div>
+        <div class="p-4">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h3 class="font-semibold text-gray-900">{{ v.marque }} {{ v.modele }}</h3>
+                    <p class="text-sm text-gray-500">{{ v.immatriculation }}</p>
+                </div>
+                <span class="px-2 py-1 rounded-full text-xs font-medium
+                    {% if v.badge_couleur == 'green' %}bg-green-100 text-green-700
+                    {% elif v.badge_couleur == 'red' %}bg-red-100 text-red-700
+                    {% elif v.badge_couleur == 'orange' %}bg-orange-100 text-orange-700
+                    {% else %}bg-gray-100 text-gray-700{% endif %}">{{ v.get_statut_display }}</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">{{ v.prix_journalier }} FCFA / jour</p>
+            <p class="text-xs text-gray-400">{{ v.kilometrage_actuel }} km</p>
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-gray-500 col-span-full text-center py-12">Aucun vehicule pour le moment. Ajoutez-en un pour demarrer.</p>
+    {% endfor %}
+</div>
+{% endblock %}

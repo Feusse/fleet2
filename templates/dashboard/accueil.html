@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord - Fleet.cm{% endblock %}
+{% block extra_head %}<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <h1 class="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+    {% if est_patron %}
+    <div class="flex gap-2">
+        <a href="{% url 'dashboard:export' %}?format=pdf" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-xs font-medium hover:bg-gray-200">Exporter en PDF</a>
+        <a href="{% url 'dashboard:export' %}?format=xlsx" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-xs font-medium hover:bg-gray-200">Exporter en Excel</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {% if est_patron %}
+    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">CA du mois</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">{{ ca_du_mois }} FCFA</p>
+    </div>
+    {% endif %}
+    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Locations en cours</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">{{ locations_en_cours }}</p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Vehicules disponibles</p>
+        <p class="text-2xl font-bold text-green-600 mt-1">{{ vehicules_dispo }}</p>
+    </div>
+    {% if est_patron %}
+    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Impayes</p>
+        <p class="text-2xl font-bold text-red-600 mt-1">{{ impayes }} FCFA</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if not est_patron %}
+<div class="bg-blue-50 text-blue-700 text-sm px-4 py-3 rounded-md mb-8">
+    Les chiffres financiers (chiffre d'affaires, impayes) sont reserves au patron de l'agence.
+</div>
+{% endif %}
+
+{% if est_patron %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-4">CA par mois (6 derniers mois)</h2>
+        <canvas id="caChart" height="180"></canvas>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-4">Top vehicules</h2>
+        <p class="text-xs text-gray-500 mb-2">Les plus rentables</p>
+        <ul class="text-sm space-y-1 mb-4">
+            {% for v in top_rentables %}
+            <li class="flex justify-between"><span>{{ v.marque }} {{ v.modele }}</span><span class="font-medium text-green-600">{{ v.revenu|default:0 }} FCFA</span></li>
+            {% empty %}<li class="text-gray-400">Pas encore de donnees.</li>{% endfor %}
+        </ul>
+        <p class="text-xs text-gray-500 mb-2">Coutent le plus (frais cumules)</p>
+        <ul class="text-sm space-y-1">
+            {% for v in top_couteux %}
+            <li class="flex justify-between"><span>{{ v.marque }} {{ v.modele }}</span><span class="font-medium text-red-600">{{ v.frais|default:0 }} FCFA</span></li>
+            {% empty %}<li class="text-gray-400">Pas encore de donnees.</li>{% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% if est_patron %}
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Clients qui doivent de l'argent</h2>
+        <div class="space-y-2">
+            {% for item in clients_endettes %}
+            <a href="{% url 'reservations:detail' item.reservation.pk %}" class="flex justify-between text-sm border-b border-gray-50 pb-2 hover:text-blue-600">
+                <span>{{ item.reservation.client }}</span><span class="font-medium text-red-600">{{ item.solde }} FCFA</span>
+            </a>
+            {% empty %}<p class="text-gray-400 text-sm">Aucun impaye. Bien joue !</p>{% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Vehicules en maintenance</h2>
+        <div class="space-y-2">
+            {% for v in vehicules_maintenance %}
+            <a href="{% url 'fleet:detail' v.pk %}" class="flex justify-between text-sm border-b border-gray-50 pb-2 hover:text-blue-600">
+                <span>{{ v.marque }} {{ v.modele }}</span><span class="text-gray-400">{{ v.immatriculation }}</span>
+            </a>
+            {% empty %}<p class="text-gray-400 text-sm">Aucun vehicule en maintenance.</p>{% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if est_patron %}
+<script>
+const ctx = document.getElementById('caChart');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels_mois|safe }},
+        datasets: [{
+            label: 'CA (FCFA)',
+            data: {{ valeurs_mois|safe }},
+            backgroundColor: '#2563eb',
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

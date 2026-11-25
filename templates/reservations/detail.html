@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Reservation - Fleet.cm{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ reservation.client }}</h1>
+        <p class="text-gray-500 text-sm">{{ reservation.vehicule }}</p>
+    </div>
+    <span class="px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">{{ reservation.get_statut_display }}</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="md:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <dl class="grid grid-cols-2 gap-4 text-sm mb-6">
+            <div><dt class="text-gray-500">Depart</dt><dd class="font-medium">{{ reservation.date_depart }}</dd></div>
+            <div><dt class="text-gray-500">Retour prevu</dt><dd class="font-medium">{{ reservation.date_retour }}</dd></div>
+            <div><dt class="text-gray-500">Prix total</dt><dd class="font-medium">{{ reservation.prix_total }} FCFA</dd></div>
+            <div><dt class="text-gray-500">Solde restant</dt><dd class="font-medium {% if solde_restant > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ solde_restant }} FCFA</dd></div>
+        </dl>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'reservations:contrat' reservation.pk %}" target="_blank" class="bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800">Generer le contrat (PDF)</a>
+            <a href="{% url 'billing:ajouter' reservation.pk %}" class="bg-green-50 text-green-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-green-100">+ Enregistrer un paiement</a>
+            {% if reservation.statut == "devis" %}
+            <form method="post" action="{% url 'reservations:confirmer' reservation.pk %}">{% csrf_token %}<button class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Confirmer la reservation</button></form>
+            {% endif %}
+            {% if reservation.statut == "confirmee" %}
+            <form method="post" action="{% url 'reservations:demarrer' reservation.pk %}">{% csrf_token %}<button class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Marquer "en cours" (vehicule remis)</button></form>
+            {% endif %}
+            {% if reservation.statut == "confirmee" or reservation.statut == "en_cours" %}
+            <a href="{% url 'reservations:retour' reservation.pk %}" class="bg-orange-50 text-orange-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-100">Enregistrer le retour</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h2 class="font-semibold text-gray-900 mb-3">Paiements</h2>
+        <div class="space-y-2">
+            {% for p in paiements %}
+            <div class="flex items-center justify-between text-sm border-b border-gray-50 pb-2">
+                <div><p class="font-medium">{{ p.get_type_paiement_display }}</p><p class="text-gray-400 text-xs">{{ p.get_methode_display }}</p></div>
+                <div class="text-right">
+                    <p class="font-medium">{{ p.montant }} FCFA</p>
+                    <p class="text-xs {% if p.statut == 'paye' %}text-green-600{% else %}text-orange-500{% endif %}">{{ p.get_statut_display }}</p>
+                    {% if p.statut == 'en_attente' %}
+                    <div class="flex gap-2 justify-end mt-1">
+                        {% if cinetpay_actif %}
+                        <a href="{% url 'billing:payer_en_ligne' p.pk %}" class="text-xs text-green-600 hover:underline">Payer en ligne (OM/MoMo)</a>
+                        {% endif %}
+                        <form method="post" action="{% url 'billing:marquer_paye' p.pk %}">{% csrf_token %}<button class="text-xs text-blue-600 hover:underline">Marquer paye</button></form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-400 text-sm">Aucun paiement enregistre.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% if reservation.statut == "terminee" %}
+<div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mt-6">
+    <h2 class="font-semibold text-gray-900 mb-3">Details du retour</h2>
+    <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div><dt class="text-gray-500">Kilometrage retour</dt><dd class="font-medium">{{ reservation.kilometrage_retour }} km</dd></div>
+        <div><dt class="text-gray-500">Frais supplementaires</dt><dd class="font-medium">{{ reservation.frais_supplementaires }} FCFA</dd></div>
+        <div class="col-span-2"><dt class="text-gray-500">Etat au retour</dt><dd class="font-medium">{{ reservation.etat_retour|default:"-" }}</dd></div>
+    </dl>
+</div>
+{% endif %}
+{% endblock %}

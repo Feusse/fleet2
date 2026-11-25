@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Creer mon agence - Fleet.cm{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+    <h1 class="text-2xl font-bold text-gray-900 mb-1">Creer votre agence</h1>
+    <p class="text-gray-500 text-sm mb-6">Essai gratuit, sans carte bancaire.</p>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<p class="text-red-600 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-blue-600 text-white rounded-md py-2 font-medium hover:bg-blue-700">Creer mon agence</button>
+    </form>
+    <p class="text-sm text-gray-500 mt-4 text-center">
+        Deja un compte ? <a href="{% url 'tenants:connexion' %}" class="text-blue-600 hover:underline">Se connecter</a>
+    </p>
+</div>
+<style>
+    input[type="text"], input[type="email"], input[type="password"] {
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem 0.75rem; outline: none;
+    }
+    input:focus { box-shadow: 0 0 0 2px #3b82f6; }
+</style>
+{% endblock %}
